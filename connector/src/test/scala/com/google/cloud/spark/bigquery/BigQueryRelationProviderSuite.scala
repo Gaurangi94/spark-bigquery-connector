@@ -21,9 +21,8 @@ import com.google.api.client.util.Base64
 import com.google.cloud.bigquery._
 import com.google.cloud.spark.bigquery.direct.DirectBigQueryRelation
 import org.apache.hadoop.conf.Configuration
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.internal.{SQLConf, SessionState}
 import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.mockito.{ArgumentMatchers, Mock, MockitoAnnotations}

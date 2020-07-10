@@ -90,6 +90,8 @@ object SparkBigQueryOptions {
   val ViewsEnabledOption = "viewsEnabled"
 
   val DefaultReadDataFormat: DataFormat = DataFormat.ARROW
+  val DefaultArrowUnsafeMemoryAccess: Boolean = false
+  val DefaultArrowNullCheckForGet: Boolean = true
   val DefaultFormat: String = "parquet"
   val DefaultIntermediateFormat: IntermediateFormat =
     IntermediateFormat(DefaultFormat, FormatOptions.parquet())
@@ -146,6 +148,23 @@ object SparkBigQueryOptions {
           .stripMargin.replace('\n', ' '))
     }
     val readDataFormat = DataFormat.valueOf(readDataFormatParam)
+
+    val arrowEnableUnsafeMemoryAccessProperty = "arrow.enable_unsafe_memory_access"
+    val arrowEnableUnsafeMemoryAccess = getAnyBooleanOption(normalizedAllConf,
+      parameters,
+      arrowEnableUnsafeMemoryAccessProperty,
+      DefaultArrowUnsafeMemoryAccess)
+    System.setProperty(arrowEnableUnsafeMemoryAccessProperty,
+      arrowEnableUnsafeMemoryAccess.toString)
+
+    val arrowEnableNullCheckGetProperty = "arrow.enable_null_check_for_get"
+    val arrowEnableNullCheckGet = getAnyBooleanOption(normalizedAllConf,
+      parameters,
+      arrowEnableNullCheckGetProperty,
+      DefaultArrowNullCheckForGet)
+    System.setProperty(arrowEnableNullCheckGetProperty,
+      arrowEnableNullCheckGet.toString)
+
     val combinePushedDownFilters = getAnyBooleanOption(
       normalizedAllConf, parameters, "combinePushedDownFilters", true)
     val viewsEnabled = getAnyBooleanOption(

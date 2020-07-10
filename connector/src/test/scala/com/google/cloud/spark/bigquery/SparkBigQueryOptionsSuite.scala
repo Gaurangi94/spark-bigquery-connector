@@ -134,6 +134,54 @@ class SparkBigQueryOptionsSuite extends FunSuite {
     }
   }
 
+  test("default value for unsafe memory access for Arrow") {
+    val options = SparkBigQueryOptions(
+      parameters,
+      Map.empty[String, String], // allConf
+      new Configuration,
+      new SQLConf,
+      sparkVersion,
+      None) // schema
+
+    assert(System.getProperty("arrow.enable_unsafe_memory_access") == "false")
+  }
+
+  test("set unsafe memory access to true for Arrow") {
+    val options = SparkBigQueryOptions(
+      parameters + ("arrow.enable_unsafe_memory_access" -> "true"),
+      Map.empty[String, String], // allConf
+      new Configuration,
+      new SQLConf,
+      sparkVersion,
+      None) // schema
+
+    assert(System.getProperty("arrow.enable_unsafe_memory_access") == "true")
+  }
+
+  test("default value for null check for get for Arrow") {
+    val options = SparkBigQueryOptions(
+      parameters,
+      Map.empty[String, String], // allConf
+      new Configuration,
+      new SQLConf,
+      sparkVersion,
+      None) // schema
+
+    assert(System.getProperty("arrow.enable_null_check_for_get") == "true")
+  }
+
+  test("set null check for get to false for Arrow") {
+    val options = SparkBigQueryOptions(
+      parameters + ("arrow.enable_null_check_for_get" -> "false"),
+      Map.empty[String, String], // allConf
+      new Configuration,
+      new SQLConf,
+      sparkVersion,
+      None) // schema
+
+    assert(System.getProperty("arrow.enable_null_check_for_get") == "false")
+  }
+
   test("Set Read Data Format as Avro") {
     assertResult("AVRO") {
       val options = SparkBigQueryOptions(
