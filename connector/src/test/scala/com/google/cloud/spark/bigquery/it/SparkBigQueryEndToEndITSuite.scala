@@ -19,8 +19,11 @@ import com.google.cloud.bigquery.{BigQueryOptions, QueryJobConfiguration, Standa
 import com.google.cloud.spark.bigquery.direct.DirectBigQueryRelation
 import com.google.cloud.spark.bigquery.it.TestConstants._
 import com.google.cloud.spark.bigquery.{SparkBigQueryOptions, TestUtils}
+import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
+import org.apache.spark.sql.execution.streaming.MemoryStream
+import org.apache.spark.sql.streaming.OutputMode
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession}
 import org.scalatest.concurrent.TimeLimits
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.time.SpanSugar._
@@ -415,6 +418,18 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
           .head
       }
     }
+    test("Unhandle filter on struct. DataSource %s".format(dataSourceFormat)) {
+      val df = spark.read.format(dataSourceFormat)
+        .option("table", "bigquery-public-data:samples.github_nested")
+        .option("filter", "url like '%spark'")
+        .load()
+
+      val result = df.select("url")
+        .where("repository is not null")
+        .collect()
+
+      result.size shouldBe 85
+    }
   }
   // Write tests. We have four save modes: Append, ErrorIfExists, Ignore and
   // Overwrite. For each there are two behaviours - the table exists or not.
@@ -564,6 +579,44 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
 
     assert(df.head() == allTypesTable.head())
     assert(df.schema == allTypesTable.schema)
+  }
+
+  test("streaming bq write append") {
+    failAfter(120 seconds) {
+      val schema = initialData.schema
+      val expressionEncoder: ExpressionEncoder[Row] =
+        RowEncoder(schema).resolveAndBind()
+      val stream = MemoryStream[Row](expressionEncoder, spark.sqlContext)
+      var lastBatchId: Long = 0
+      val streamingDF = stream.toDF()
+      val cpLoc: String = "/tmp/%s-%d".
+        format(fullTableName, System.nanoTime())
+      // Start write stream
+      val writeStream = streamingDF.writeStream.
+        format("bigquery").
+        outputMode(OutputMode.Append()).
+        option("checkpointLocation", cpLoc).
+        option("table", fullTableName).
+        option("temporaryGcsBucket", temporaryGcsBucket).
+        start
+
+      // Write to stream
+      stream.addData(initialData.collect())
+      while (writeStream.lastProgress.batchId <= lastBatchId) {
+        Thread.sleep(1000L)
+      }
+      lastBatchId = writeStream.lastProgress.batchId
+      testTableNumberOfRows shouldBe 2
+      initialDataValuesExist shouldBe true
+      // Write to stream
+      stream.addData(additonalData.collect())
+      while (writeStream.lastProgress.batchId <= lastBatchId) {
+        Thread.sleep(1000L)
+      }
+      writeStream.stop()
+      testTableNumberOfRows shouldBe 4
+      additionalDataValuesExist shouldBe true
+    }
   }
 
   test("query materialized view") {
