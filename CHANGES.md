@@ -1,5 +1,25 @@
 # Release Notes
 
+## 0.17.1 - 2020-08-xx
+* Issue #216: removed redundant ALPN dependency
+* Issue #219: Fixed the LessThanOrEqual filter SQL compilation in the DataSource v2 implmentation
+* Issue #221: Fixed ProtobufUtilsTest.java with newer BigQuery dependencies
+* PR #229: Adding support for Spark ML Vector and Matrix data types
+* BigQuery API has been upgraded to version 1.116.8
+* BigQuery Storage API has been upgraded to version 1.3.1
+
+## 0.17.0 - 2020-07-15
+* PR #201: [Structured streaming write](http://spark.apache.org/docs/2.4.5/structured-streaming-programming-guide.html#starting-streaming-queries)
+  is now supported (thanks @varundhussa) 
+* PR #202: Users now has the option to keep the data on GCS after writing to BigQuery (thanks @leoneuwald)
+* PR #211: Enabling to overwrite data of a single date partition
+* PR #198: Supporting columnar batch reads from Spark in the DataSource V2 implementation. **It is not ready for production use.**
+* PR #192: Supporting `MATERIALIZED_VIEW` as table type
+* Issue #197: Conditions on StructType fields are now handled by Spark and not the connector
+* BigQuery API has been upgraded to version 1.116.3
+* BigQuery Storage API has been upgraded to version 1.0.0
+* Netty has been upgraded to version 4.1.48.Final (Fixing issue #200) 
+
 ## 0.16.1 - 2020-06-11
 * PR #186: Fixed SparkBigQueryConnectorUserAgentProvider initialization bug
 
