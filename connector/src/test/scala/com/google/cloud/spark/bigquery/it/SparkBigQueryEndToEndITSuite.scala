@@ -171,6 +171,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
         .option("dataset", testDataset)
         .option("table", testTable)
         .option("readDataFormat", "arrow")
+        .option("arrow.enable_unsafe_memory_access", "true")
+        .option("arrow.enable_null_check_for_get", "false")
         .load().cache()
 
       assert(df.head() == allTypesTable.head())
@@ -186,6 +188,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
         .option("table", LARGE_TABLE)
         .option("parallelism", "5")
         .option("readDataFormat", dataFormat)
+        .option("arrow.enable_unsafe_memory_access", "true")
+        .option("arrow.enable_null_check_for_get", "false")
         .load()
       assert(5 == df.rdd.getNumPartitions)
     }
@@ -195,6 +199,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
       val df = spark.read.format("com.google.cloud.spark.bigquery")
         .option("table", LARGE_TABLE)
         .option("readDataFormat", dataFormat)
+        .option("arrow.enable_unsafe_memory_access", "true")
+        .option("arrow.enable_null_check_for_get", "false")
         .load()
       assert(df.rdd.getNumPartitions == 35)
     }
@@ -207,6 +213,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
         val df = spark.read
           .option("parallelism", 5)
           .option("readDataFormat", dataFormat)
+          .option("arrow.enable_unsafe_memory_access", "true")
+          .option("arrow.enable_null_check_for_get", "false")
           .option("filter", "year > 2000")
           .bigquery(LARGE_TABLE)
           .select(LARGE_TABLE_FIELD) // minimize payload
@@ -235,6 +243,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
         .option("table", "bigquery-public-data.samples.shakespeare")
         .option("optimizedEmptyProjection", "false")
         .option("readDataFormat", dataFormat)
+        .option("arrow.enable_unsafe_memory_access", "true")
+        .option("arrow.enable_null_check_for_get", "false")
         .load()
         .select("corpus_date")
         .where("corpus_date > 0")
@@ -246,6 +256,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
         spark.read.format(dataSourceFormat)
           .option("table", "bigquery-public-data.samples.shakespeare")
           .option("readDataFormat", dataFormat)
+          .option("arrow.enable_unsafe_memory_access", "true")
+          .option("arrow.enable_null_check_for_get", "false")
           .load()
           .where("corpus_date > 0")
           .count()
@@ -263,6 +275,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
         .option("table", "bigquery-public-data.samples.shakespeare")
         .option("optimizedEmptyProjection", "false")
         .option("readDataFormat", dataFormat)
+        .option("arrow.enable_unsafe_memory_access", "true")
+        .option("arrow.enable_null_check_for_get", "false")
         .load()
         .select("corpus_date")
         .count()
@@ -273,6 +287,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
         spark.read.format(dataSourceFormat)
           .option("table", "bigquery-public-data.samples.shakespeare")
           .option("readDataFormat", dataFormat)
+          .option("arrow.enable_unsafe_memory_access", "true")
+          .option("arrow.enable_null_check_for_get", "false")
           .load()
           .count()
       }
@@ -289,6 +305,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
           .option("filter", "length(word) = 1")
           .option("combinePushedDownFilters", "true")
           .option("readDataFormat", dataFormat)
+          .option("arrow.enable_unsafe_memory_access", "true")
+          .option("arrow.enable_null_check_for_get", "false")
           .load())
 
       val oldBehaviourWords = extractWords(
@@ -297,6 +315,8 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
           .option("filter", "length(word) = 1")
           .option("combinePushedDownFilters", "false")
           .option("readDataFormat", dataFormat)
+          .option("arrow.enable_unsafe_memory_access", "true")
+          .option("arrow.enable_null_check_for_get", "false")
           .load())
 
       newBehaviourWords should equal(oldBehaviourWords)
@@ -321,11 +341,15 @@ class SparkBigQueryEndToEndITSuite extends FunSuite
         .option("table", "bigquery-public-data.samples.shakespeare")
         .option("filter", "word_count = 1 OR corpus_date = 0")
         .option("readDataFormat", "AVRO")
+        .option("arrow.enable_unsafe_memory_access", "true")
+        .option("arrow.enable_null_check_for_get", "false")
         .load().collect()
 
       val arrowResults = spark.read.format("bigquery")
         .option("table", "bigquery-public-data.samples.shakespeare")
         .option("readDataFormat", "ARROW")
+        .option("arrow.enable_unsafe_memory_access", "true")
+        .option("arrow.enable_null_check_for_get", "false")
         .load().where("word_count = 1 OR corpus_date = 0")
         .collect()
 
